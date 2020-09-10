@@ -1,0 +1,9 @@
+tokenfactory:
+  issuer: http://localhost:8080
+  json-keyset: classpath:json-keys.json
+
+spring:
+  jackson:
+    default-property-inclusion: non-null
+    date-format: com.fasterxml.jackson.databind.util.ISO8601DateFormat
+    property-naming-strategy: SNAKE_CASE
