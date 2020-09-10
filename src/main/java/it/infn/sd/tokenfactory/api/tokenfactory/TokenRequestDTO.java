@@ -1,7 +1,12 @@
 package it.infn.sd.tokenfactory.api.tokenfactory;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonFormat.Shape;
+import com.fasterxml.jackson.annotation.OptBoolean;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -12,11 +17,21 @@ import lombok.Setter;
 @Setter
 public class TokenRequestDTO {
 
-  private Instant startTime;
-  private Instant endTime;
+  @JsonFormat(shape = Shape.STRING, lenient = OptBoolean.TRUE,
+      pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+  private Instant nbf;
 
-  private String keyIdentifier;
+  @JsonFormat(shape = Shape.STRING, lenient = OptBoolean.TRUE,
+      pattern = "yyyy-MM-dd'T'HH:mm:ssXXX")
+  private Instant exp;
 
-  private Map<String, String> claims;
+  private String keyId;
+
+  private String subject;
+  private String issuer;
+
+  private List<String> audiences;
+
+  private Map<String, String> otherClaims;
 
 }

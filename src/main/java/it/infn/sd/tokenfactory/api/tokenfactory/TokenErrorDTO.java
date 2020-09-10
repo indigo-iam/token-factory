@@ -1,16 +1,15 @@
 package it.infn.sd.tokenfactory.api.tokenfactory;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-
-@Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-public class TokenResponseDTO {
+@Setter
+@Getter
+public class TokenErrorDTO {
 
-  private String accessToken;
+  String error;
+  String errorDescription;
+
 }

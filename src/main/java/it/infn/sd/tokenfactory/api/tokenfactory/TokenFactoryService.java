@@ -1,6 +1,8 @@
 package it.infn.sd.tokenfactory.api.tokenfactory;
 
+import org.springframework.security.core.Authentication;
+
 @FunctionalInterface
 public interface TokenFactoryService {
-  TokenResponseDTO createToken(TokenRequestDTO request);
+  TokenResponseDTO createToken(Authentication authentication, TokenRequestDTO request);
 }

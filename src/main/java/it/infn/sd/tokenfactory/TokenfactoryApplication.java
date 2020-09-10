@@ -27,6 +27,7 @@ public class TokenfactoryApplication {
     return JWKSet.load(keysetResource.getInputStream());
   }
 
+
   @Bean
   Clock clock() {
     return Clock.systemDefaultZone();
