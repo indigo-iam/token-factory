@@ -77,16 +77,46 @@
 
 	<build>
 		<plugins>
+
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>validate</phase>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<dateFormat>yyyyMMdd-HHmmss</dateFormat>
+					<generateGitPropertiesFile>false</generateGitPropertiesFile>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+
+			<plugin>
+				<groupId>com.google.cloud.tools</groupId>
+				<artifactId>jib-maven-plugin</artifactId>
+				<version>2.5.2</version>
 				<configuration>
-					<layers>
-						<enabled>true</enabled>
-					</layers>
-					<image>
-						<name>indigoiam/${project.artifactId}:${project.version}</name>
-					</image>
+					<!-- Uncomment the following to bootstrap from the debug image (provides 
+						a shell in /busybox/sh) <from> <image>gcr.io/distroless/java:debug</image> 
+						</from> <! -->
+					<to>
+						<image>indigoiam/token-factory</image>
+						<tags>
+							<tag>${project.version}</tag>
+							<tag>latest</tag>
+							<tag>${git.commit.id.abbrev}</tag>
+							<tag>${git.branch}</tag>
+						</tags>
+					</to>
 				</configuration>
 			</plugin>
 

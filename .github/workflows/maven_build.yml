@@ -18,5 +18,12 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
+
     - name: Build with Maven
       run: mvn -B package
+    
+    - name: build docker image
+      env:
+        DH_USER: ${{ secrets.DOCKERHUB_USERNAME }}
+        DH_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
+      run: mvn -B -Djib.to.auth.username=$DH_USER -Djib.to.auth.password=$DH_PASSWORD -DskipTests install jib:build
