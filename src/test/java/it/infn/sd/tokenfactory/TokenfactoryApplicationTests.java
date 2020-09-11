@@ -17,6 +17,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jwt.JWT;
@@ -38,6 +39,13 @@ class TokenfactoryApplicationTests {
 
   @Autowired
   private TokenFactoryProperties properties;
+
+  @Test
+  void rootRedirectsToMetadata() throws Exception {
+    mvc.perform(MockMvcRequestBuilders.get("/"))
+      .andExpect(status().is3xxRedirection())
+      .andExpect(MockMvcResultMatchers.redirectedUrl("/.well-known/openid-configuration"));
+  }
 
   @Test
   void metadataAccessibleWithoutAuth() throws Exception {
