@@ -2,7 +2,7 @@ package it.infn.sd.tokenfactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,10 +23,10 @@ public class DefultJWSSigningService implements JWTSigningService {
 
   private final TokenFactoryProperties properties;
   private final Map<String, JWSSigner> signers = new HashMap<>();
-  private final JWSAlgorithm defaultJWSAlgo;
+  private final Map<String, JWSAlgorithm> algos = new HashMap<>();
 
-  private final JWSAlgorithm rsaAlgo = JWSAlgorithm.RS256;
-  private final JWSAlgorithm ecAlgo = JWSAlgorithm.ES256;
+  private final JWSAlgorithm RSA_DEFAULT_ALGO = JWSAlgorithm.RS256;
+  private final JWSAlgorithm EC_DEFAULT_ALGO = JWSAlgorithm.ES256;
 
   @Autowired
   public DefultJWSSigningService(TokenFactoryProperties properties, JWKSet keySet)
@@ -37,17 +37,25 @@ public class DefultJWSSigningService implements JWTSigningService {
     for (JWK key : keySet.getKeys()) {
       if (key instanceof RSAKey && key.isPrivate()) {
 
-        RSASSASigner signer = new RSASSASigner((RSAKey) key);
-        signers.put(key.getKeyID(), signer);
+        RSAKey rsaKey = (RSAKey) key;
+
+        RSASSASigner signer = new RSASSASigner(rsaKey);
+        signers.put(rsaKey.getKeyID(), signer);
+        algos.put(rsaKey.getKeyID(),
+            Optional.ofNullable(JWSAlgorithm.parse(rsaKey.getAlgorithm().getName()))
+              .orElse(RSA_DEFAULT_ALGO));
 
       } else if (key instanceof ECKey && key.isPrivate()) {
 
-        ECDSASigner signer = new ECDSASigner((ECKey) key);
-        signers.put(key.getKeyID(), signer);
+        ECKey ecKey = (ECKey) key;
+        ECDSASigner signer = new ECDSASigner(ecKey);
+        signers.put(ecKey.getKeyID(), signer);
+        algos.put(ecKey.getKeyID(),
+            Optional.ofNullable(JWSAlgorithm.parse(ecKey.getAlgorithm().getName()))
+              .orElse(EC_DEFAULT_ALGO));
+
       }
     }
-
-    defaultJWSAlgo = JWSAlgorithm.RS256;
   }
 
   @Override
@@ -60,10 +68,6 @@ public class DefultJWSSigningService implements JWTSigningService {
     return signers.get(keyId);
   }
 
-  @Override
-  public JWSAlgorithm getDefaultSigningAlgorithm() {
-    return defaultJWSAlgo;
-  }
 
   @Override
   public void signJwt(SignedJWT jwt) throws JOSEException {
@@ -77,17 +81,13 @@ public class DefultJWSSigningService implements JWTSigningService {
 
   @Override
   public JWSAlgorithm getSigningAlgorithmForKey(String keyId) {
-    JWSSigner signer = signers.get(keyId);
+    return algos.get(keyId);
+  }
 
-    if (Objects.isNull(signer)) {
-      return null;
-    }
+  @Override
+  public JWSAlgorithm getDefaultSigningAlgorithm() {
 
-    if (signer instanceof RSASSASigner) {
-      return rsaAlgo;
-    }
-
-    return ecAlgo;
+    return algos.get(properties.getDefaultKeyId());
   }
 
 }
