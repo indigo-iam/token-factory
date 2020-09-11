@@ -19,6 +19,7 @@ package it.infn.sd.tokenfactory;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -98,7 +99,7 @@ class TokenfactoryApplicationTests {
     JWT jwt = JWTParser.parse(response.getAccessToken());
 
     JWTClaimsSet claims = jwt.getJWTClaimsSet();
-    
+
     assertThat(claims.getIssuer(), is(properties.getIssuer()));
     assertThat(claims.getSubject(), notNullValue());
 
@@ -108,8 +109,7 @@ class TokenfactoryApplicationTests {
   @WithMockUser
   void apiCanParseDate() throws Exception {
 
-    String req =
-        "{\"nbf\":\"2020-09-10T20:14:41+02:00\", \"exp\": \"2020-09-10T20:23:26+02:00\"}";
+    String req = "{\"nbf\":\"2020-09-10T20:14:41+02:00\", \"exp\": \"2020-09-10T20:23:26+02:00\"}";
 
     String tokenResponse =
         mvc.perform(post("/api/token").content(req).contentType(MediaType.APPLICATION_JSON))
@@ -123,7 +123,7 @@ class TokenfactoryApplicationTests {
     JWT jwt = JWTParser.parse(response.getAccessToken());
 
     JWTClaimsSet claims = jwt.getJWTClaimsSet();
-    
+
     assertThat(claims.getIssuer(), is(properties.getIssuer()));
     assertThat(claims.getSubject(), notNullValue());
     assertThat(claims.getNotBeforeTime(), notNullValue());
@@ -132,5 +132,25 @@ class TokenfactoryApplicationTests {
   }
 
 
+  @Test
+  @WithMockUser
+  void requestMethodNotSupportedHandled() throws Exception {
+    mvc.perform(get("/api/token"))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error", is("bad_request")));
+  }
+
+  @Test
+  @WithMockUser
+  void apiDateErrorHandledNicely() throws Exception {
+
+    String req = "{\"nbf\":\"2020-09-10T20:14\"}";
+
+    mvc.perform(post("/api/token").content(req).contentType(MediaType.APPLICATION_JSON))
+      .andExpect(status().isBadRequest())
+      .andExpect(jsonPath("$.error", is("bad_request")));
+    
+
+  }
 
 }
